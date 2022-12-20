@@ -34,7 +34,7 @@ public class WorkWithDB {
                 words.setWord(resultSet.getString(3));
                 words.setDeleted(resultSet.getBoolean(4));
                 words.setTranslation(List.of(resultSet.getString(5)));
-                words.setDefinition(resultSet.getString(6));
+                words.setDefinition(List.of(resultSet.getString(6)));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -82,7 +82,7 @@ public class WorkWithDB {
             preparedStatement.setString(1, words.getUserChatId());
             preparedStatement.setString(2, words.getWord());
             preparedStatement.setString(3, String.valueOf(stringBuilder));
-            preparedStatement.setString(4, words.getDefinition());
+            preparedStatement.setString(4, String.valueOf(words.getDefinition()));
 
             int executeUpdate = preparedStatement.executeUpdate();
             System.out.println("result = " + executeUpdate);

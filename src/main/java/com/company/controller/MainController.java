@@ -136,7 +136,7 @@ public class MainController {
 
             List<String> words = new ArrayList<>();
             ComponentContainer.USER_OBJECT_MAP.put(
-                    chatId, new Words(null, chatId, text, words, null, false));
+                    chatId, new Words(null, chatId, text, words, null, null,false));
 
             sendMessage.setChatId(chatId);
             sendMessage.setReplyMarkup(InlineKeyboardUtil.getConfirmationWord());
@@ -145,13 +145,17 @@ public class MainController {
         } else if (ComponentContainer.USER_STATUS_MAP.get(chatId) != null
                 && ComponentContainer.USER_STATUS_MAP.get(chatId).equals(UserStatus.ADD_WORD_DEFINITION)) {
 
-//            ComponentContainer.USER_STATUS_MAP.put(chatId,UserStatus.ADD_WORD_TRANSLATION);
 
             Words word = (Words) ComponentContainer.USER_OBJECT_MAP.get(chatId);
+            ComponentContainer.USER_STATUS_MAP.put(chatId,UserStatus.OPERATION);
 
-            word.setDefinition(text);
+            List<String> definition = word.getDefinition();
+            definition.add(text);
+            word.setDefinition(definition);
 
             sendMessage.setChatId(chatId);
+            sendMessage.setText("Choose:  ");
+            sendMessage.setReplyMarkup(InlineKeyboardUtil.getConfirmationDefinition());
             Words word1 = (Words) ComponentContainer.USER_OBJECT_MAP.get(chatId);
             if (service.addWord(word1)) {
                 sendMessage.setText("Added successfully");

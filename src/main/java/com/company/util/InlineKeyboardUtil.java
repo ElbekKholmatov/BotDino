@@ -70,5 +70,23 @@ public class InlineKeyboardUtil {
         markup.setKeyboard(genList);
         return markup;
     }
+    public static InlineKeyboardMarkup getConfirmationDefinition() {
+        InlineKeyboardButton button = makeButton("Done", "_done_");
+        InlineKeyboardButton button2 = makeButton("Add definition", "_add_definition_");
+        InlineKeyboardButton button3 = makeButton("Discard", "_discard_");
+
+        List<List<InlineKeyboardButton>> genList=new ArrayList<>();
+
+        List<InlineKeyboardButton> list=new ArrayList<>();
+        list.add(button);
+        list.add(button2);
+        list.add(button3);
+
+        genList.add(list);
+
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        markup.setKeyboard(genList);
+        return markup;
+    }
 //    public static ReplyKeyboardMarkup get
 }

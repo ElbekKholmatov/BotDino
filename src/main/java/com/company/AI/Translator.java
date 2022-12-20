@@ -17,4 +17,5 @@ public class Translator {
         }
         return "No available translation";
     }
+
 }
