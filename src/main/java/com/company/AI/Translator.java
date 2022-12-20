@@ -9,7 +9,7 @@ public class Translator {
 
         try {
 
-            String translate = GoogleTranslate.translate("en", text);
+            String translate = GoogleTranslate.translate("uz", text);
             return translate;
 
         } catch (IOException e) {

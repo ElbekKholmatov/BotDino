@@ -14,15 +14,16 @@ public class Words {
     private String userChatId;
     private String word;
     private List<String> translation;
-    private List<String> definition;
-    private List<String> example;
+    private List<String> synonym;//shu so'zni beruvchi boshqa soz'lar
+    private List<String> definition;//<-example
     private boolean isDeleted;
 
-    public Words(String word, List<String> translation, List<String> definition, List<String> example, boolean isDeleted) {
+    public Words(String word, String userChatId,List<String> translation, List<String> definition, List<String> synonym, boolean isDeleted) {
         this.word = word;
         this.translation = translation;
+        this.userChatId = userChatId;
         this.definition = definition;
-        this.example = example;
+        this.synonym = synonym;
         this.isDeleted = isDeleted;
     }
 }

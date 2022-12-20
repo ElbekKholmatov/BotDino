@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="learn_new_word@localhost" uuid="5a42ac16-1305-4821-9aab-6796fef88197">
+    <data-source source="LOCAL" name="goog@localhost" uuid="3c183eda-1e7a-450b-9264-fd2511f26d75">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/learn_new_word</jdbc-url>
+      <jdbc-url>jdbc:postgresql://localhost:5432/goog</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

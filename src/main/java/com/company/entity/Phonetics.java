@@ -1,4 +1,4 @@
-package com.company.domain;
+package com.company.entity;
 
 public class Phonetics {
     private String text;

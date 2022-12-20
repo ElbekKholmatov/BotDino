@@ -1,6 +1,7 @@
 package com.company.controller;
 
 
+import com.company.AI.Check;
 import com.company.AI.Translator;
 import com.company.container.ComponentContainer;
 import com.company.db.Database;
@@ -195,6 +196,19 @@ public class MainController {
                 && ComponentContainer.USER_STATUS_MAP.get(chatId).equals(UserStatus.AUTO_TRANSLATOR)) {
 
             ComponentContainer.USER_STATUS_MAP.put(chatId, UserStatus.OPERATION);
+            sendMessage.setText(Translator.translate(text));
+        }else if (text.equals(ReplyKeyboardConstants.ADD_BY_GOOGLE)){
+
+            ComponentContainer.USER_STATUS_MAP.put(chatId, UserStatus.GOOGLE_ADD);
+
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Enter word: ");
+        }else if (ComponentContainer.USER_STATUS_MAP.get(chatId) != null
+                && ComponentContainer.USER_STATUS_MAP.get(chatId).equals(UserStatus.GOOGLE_ADD)) {
+
+            ComponentContainer.USER_STATUS_MAP.put(chatId, UserStatus.OPERATION);
+            Words dictionary = Check.dictionary(text, chatId);
+
             sendMessage.setText(Translator.translate(text));
         }
 
