@@ -3,9 +3,10 @@ package com.company.controller;
 
 import com.company.AI.Translator;
 import com.company.container.ComponentContainer;
+import com.company.db.Database;
+import com.company.entity.Time;
 import com.company.entity.Users;
 import com.company.entity.Words;
-import com.company.enums.GoogleEnum;
 import com.company.enums.UserStatus;
 import com.company.service.UserService;
 import com.company.util.InlineKeyboardUtil;
@@ -17,8 +18,9 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.objects.*;
 
 
+import javax.lang.model.util.ElementScanner6;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -67,7 +69,6 @@ public class MainController {
     }
 
 
-
     private static void handleText(Message message) {
         UserService service = UserService.getInstance();
 
@@ -83,35 +84,42 @@ public class MainController {
 
 
             sendMessage.setText("Welcome, " + user.getFirstName());
-            Users users= Users.builder()
-                    .chatId(String.valueOf(user.getId()))
-                    .name(user.getFirstName())
-                    .username(user.getUserName())
-                    .isAutoAddWord(true)
-                    .build();
-            service.addUser(users);
+            if (service.getUser(chatId) == null) {
+                Users users = Users.builder()
+                        .chatId(String.valueOf(user.getId()))
+                        .name(user.getFirstName())
+                        .username(user.getUserName())
+                        .isAutoAddWord(true)
+                        .build();
+                service.addUser(users);
+                Time time =new Time(chatId, String.valueOf(LocalDateTime.now().plusHours(1)));
+                List<Time> times = Database.getTimes();
+                times.add(time);
+                Database.timeToFile(times);
+
+            }
             ComponentContainer.MY_BOT.sendMsg(sendMessage);
 
             sendMessage.setText("Tizim ishlash turini tanlang: ");
             sendMessage.setReplyMarkup(ReplyKeyboardUtil.getMenu());
-        }else if (text.equals("/mywords")){
+        } else if (text.equals("/mywords")) {
             List<Words> allMyWords = service.getAllMyWords(chatId);
-            if (Objects.isNull(allMyWords)){
+            if (Objects.isNull(allMyWords)) {
                 sendMessage.setText("Sizda hozircha so'zlar yo'q");
-            }else {
-                StringBuilder sb=new StringBuilder();
+            } else {
+                StringBuilder sb = new StringBuilder();
                 sb.append("Sizning so'zlaringiz: ");
                 for (Words allMyWord : allMyWords) {
-                    String translations="";
+                    String translations = "";
                     for (String s : allMyWord.getTranslation()) {
-                        translations=translations+s+" | ";
+                        translations = translations + s + " | ";
                     }
                     sb.append(allMyWord.getWord()).append(": ").append(translations).append("\n");
                 }
                 sendMessage.setText(sb.toString());
             }
 
-        }else if(text.equals("/config")){
+        } else if (text.equals("/config")) {
             sendMessage.setText("Tizim ishlash turini tanlang: ");
             sendMessage.setReplyMarkup(ReplyKeyboardUtil.getMenu());
         } else if (text.equals(ReplyKeyboardConstants.ADD_MANUAL)) {
@@ -121,13 +129,12 @@ public class MainController {
             sendMessage.setChatId(chatId);
             sendMessage.setText("Enter word: ");
 
-
         } else if (ComponentContainer.USER_STATUS_MAP.get(chatId) != null
                 && ComponentContainer.USER_STATUS_MAP.get(chatId).equals(UserStatus.ADD_WORD)) {
 
             ComponentContainer.USER_STATUS_MAP.put(chatId, UserStatus.OPERATION);
 
-            List<String> words=new ArrayList<>();
+            List<String> words = new ArrayList<>();
             ComponentContainer.USER_OBJECT_MAP.put(
                     chatId, new Words(null, chatId, text, words, null, false));
 
@@ -145,14 +152,26 @@ public class MainController {
             word.setDefinition(text);
 
             sendMessage.setChatId(chatId);
-            sendMessage.setText("Choose operation: ");
+            Words word1 = (Words) ComponentContainer.USER_OBJECT_MAP.get(chatId);
+            if (service.addWord(word1)) {
+                sendMessage.setText("Added successfully");
+            } else {
+                Words dbWord = service.getWord(word1.getWord());
 
-            ComponentContainer.USER_STATUS_MAP.put(chatId, UserStatus.OPERATION);
+                StringBuilder translations = new StringBuilder();
+                for (String s : dbWord.getTranslation()) {
+                    translations.append(s).append("\n");
+                }
+                sendMessage.setText("You already have this word with informations: " + dbWord.getWord() + ": " + translations);
+            }
+            ComponentContainer.USER_STATUS_MAP.remove(chatId);
+            ComponentContainer.USER_OBJECT_MAP.remove(chatId);
 
         } else if (ComponentContainer.USER_STATUS_MAP.get(chatId) != null
                 && ComponentContainer.USER_STATUS_MAP.get(chatId).equals(UserStatus.ADD_WORD_TRANSLATION)) {
 
             Words word = (Words) ComponentContainer.USER_OBJECT_MAP.get(chatId);
+            ComponentContainer.USER_STATUS_MAP.put(chatId, UserStatus.OPERATION);
 
             List<String> translation = word.getTranslation();
             translation.add(text);
@@ -160,46 +179,19 @@ public class MainController {
 
             sendMessage.setChatId(chatId);
             sendMessage.setText("Choose:  ");
-
             sendMessage.setReplyMarkup(InlineKeyboardUtil.getConfirmationWord());
 
-        } else if (ComponentContainer.USER_STATUS_MAP.get(chatId) != null
-                && ComponentContainer.USER_STATUS_MAP.get(chatId).equals(UserStatus.ADD_WORD_TRANSLATION)) {
+        }else if (text.equals(ReplyKeyboardConstants.AUTO_TRANSLATOR)){
 
-            ComponentContainer.USER_STATUS_MAP.put(chatId, UserStatus.OPERATION);
+            ComponentContainer.USER_STATUS_MAP.put(chatId, UserStatus.AUTO_TRANSLATOR);
 
-            List<String> words=new ArrayList<>();
-            ComponentContainer.USER_OBJECT_MAP.put(
-                    chatId, new Words(null, chatId, text, words, null, false));
-
-            sendMessage.setChatId(chatId);
-            sendMessage.setReplyMarkup(InlineKeyboardUtil.getConfirmationWord());
-            sendMessage.setText("Enter translation of the word: ");
-
-        }
-        else if(text.equals(ReplyKeyboardConstants.ADD_BY_GOOGLE)){
-            ComponentContainer.USER_STATUS_MAP.put(chatId, UserStatus.ADD_WORD_WITH_GOOGLE);
             sendMessage.setChatId(chatId);
             sendMessage.setText("Enter word: ");
-        } else if (ComponentContainer.USER_STATUS_MAP.get(chatId) != null
-                && ComponentContainer.USER_STATUS_MAP.get(chatId).equals(UserStatus.ADD_WORD_WITH_GOOGLE)) {
+        }else if (ComponentContainer.USER_STATUS_MAP.get(chatId) != null
+                && ComponentContainer.USER_STATUS_MAP.get(chatId).equals(UserStatus.AUTO_TRANSLATOR)) {
 
             ComponentContainer.USER_STATUS_MAP.put(chatId, UserStatus.OPERATION);
-
-            Words words1 = new Words();
-            words1.setTranslation(Arrays.asList(Translator.translate(text)));
-            words1.setWord(text);
-            words1.setUserChatId(chatId);
-            words1.setDeleted(false);
-            List<String> words=new ArrayList<>();
-            ComponentContainer.USER_OBJECT_MAP.put(
-                    chatId,words1);
-
-            sendMessage.setChatId(chatId);
-            sendMessage.setReplyMarkup(InlineKeyboardUtil.getConfirmationWord());
-
-
-
+            sendMessage.setText(Translator.translate(text));
         }
 
         ComponentContainer.MY_BOT.sendMsg(sendMessage);
@@ -207,10 +199,14 @@ public class MainController {
     }
 
 
-
     public static void handleCallback(Message message, String data) {
         SendMessage sendMessage = new SendMessage();
         String chatId = String.valueOf(message.getChatId());
+
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId);
+        deleteMessage.setMessageId(message.getMessageId());
+        ComponentContainer.MY_BOT.sendMsg(deleteMessage);
 
         if (ComponentContainer.USER_STATUS_MAP.get(chatId) != null
                 && ComponentContainer.USER_STATUS_MAP.get(chatId).equals(UserStatus.OPERATION)) {
@@ -222,14 +218,9 @@ public class MainController {
                 sendMessage.setText("Enter translation of the word: ");
 
             } else if (data.equals("_done_")) {
-                UserService service = UserService.getInstance();
-                Words word = (Words) ComponentContainer.USER_OBJECT_MAP.get(chatId);
-                if (service.addWord(word)) {
-                    sendMessage.setText("Successfully added");
-                } else {
-                    sendMessage.setText("Some error ❗");
-                }
-                ComponentContainer.USER_STATUS_MAP.put(chatId,UserStatus.ADD_WORD_DEFINITION);
+
+                sendMessage.setText("Enter definition: ");
+                ComponentContainer.USER_STATUS_MAP.put(chatId, UserStatus.ADD_WORD_DEFINITION);
             } else if (data.equals("_discard_")) {
                 ComponentContainer.USER_STATUS_MAP.remove(chatId);
                 ComponentContainer.USER_OBJECT_MAP.remove(chatId);

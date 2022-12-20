@@ -14,4 +14,5 @@ public class Users {
     private String name;
     private String username;
     private boolean isAutoAddWord;
+
 }

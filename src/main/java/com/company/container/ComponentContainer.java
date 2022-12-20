@@ -8,13 +8,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public interface ComponentContainer {
-    String BOT_USERNAME = "DinoWordLearnBot";
     String BOT_TOKEN = "5864689997:AAHQw_3UmbljuQ0HnSEfy7VVn9kLs7YpIzU";
-    String ADMIN_CHAT_ID = "616525392";
+    String BOT_USERNAME = "http://t.me/DinoWordLearnBot";
+
     MyBot MY_BOT = new MyBot();
 
-    // chat id, admin status
-    Map<String, AdminStatus> adminStatusMap = new HashMap<>();
+     String USER_DB = "postgres";
+     String PASSWORD_DB = "0";
+     String URL_DB = "jdbc:postgresql://localhost:5432/learn_new_word";
 
     Map<String, UserStatus> USER_STATUS_MAP = new HashMap<>();
 

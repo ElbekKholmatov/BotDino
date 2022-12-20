@@ -3,8 +3,11 @@ package com.company.service;
 import com.company.entity.Users;
 import com.company.entity.Words;
 
+import java.sql.*;
 import java.util.List;
 import java.util.Objects;
+
+import static com.company.container.ComponentContainer.*;
 
 public class UserService {
     private static UserService instance;
@@ -30,7 +33,14 @@ public class UserService {
     }
 
 
-    public Words getWord(String wordId){
+    public Words getWord(Long wordId){
+
+        // databasedan shu id ga tegishli wordni topib qaytarish kerak
+
+
+        return null;
+    }
+    public Words getWord(String word){
 
         // databasedan shu id ga tegishli wordni topib qaytarish kerak
 
@@ -39,22 +49,40 @@ public class UserService {
     }
 
 
-    public boolean addWord(Words words){
+    public boolean addWord(Words words) {
         //databasega kelga shu wordni qo'shish kerak
-        return false;
-    }
-
-    public boolean addUser(Users user){
-
+        WorkWithDB.addWord(words);
 
         return false;
     }
 
+    public boolean addUser(Users user) {
 
-    public Users getUser(String chatId){
+        if (Objects.nonNull(user)) ;
+        return WorkWithDB.addUser(user);
+    }
 
 
+    public static Users getUser(String chatId) {
+        Users users = new Users();
+        String query = """
+                select * from Users where chat_id=?;
+                """;
+        try (Connection connection = DriverManager.getConnection(URL_DB, USER_DB, PASSWORD_DB);
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setLong(1, Long.parseLong(chatId));
 
-        return null;
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                users.setChatId(resultSet.getString(1));
+                users.setName(resultSet.getString(2));
+                users.setUsername(resultSet.getString(3));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+        }
+        return users;
     }
 }

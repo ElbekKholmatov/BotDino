@@ -10,7 +10,7 @@ import java.util.List;
 @Builder
 @ToString
 public class Words {
-    private Long id;
+    private String id;
     private String userChatId;
     private String word;
     private List<String> translation;
