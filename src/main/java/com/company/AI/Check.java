@@ -30,7 +30,13 @@ public class Check {
             HttpResponse<String> postResponse = httpClient.send(postRequest, HttpResponse.BodyHandlers.ofString());
             System.out.println(postResponse.body());
             Gson gson = new Gson();
+            String check = postResponse.body();
+            if (check.contains("No Definitions Found"))
+                return null;
+
             Word[] words = gson.fromJson(postResponse.body(), Word[].class);
+            if(Objects.isNull(words))
+                return null;
             ArrayList<String> definitionL = new ArrayList<>();
             ArrayList<String> synonymL = new ArrayList<>();
             for (Word word1 : words) {
@@ -46,10 +52,9 @@ public class Check {
                         if(synonym !=null)
                             synonymL.add(synonym);
                     }
-                }if(Objects.isNull((words[0].getWord())))
-                    return null;
+                }
 
-                Words words1 = new Words(words[0].getWord(),chatId,new ArrayList<>(List.of(text)),definitionL,synonymL,false);
+                Words words1 = new Words(words[0].getWord(),chatId,new ArrayList<>(List.of(Translator.translate(text))),definitionL,synonymL,false);
                 return words1;
 
             }

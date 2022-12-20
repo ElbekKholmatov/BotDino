@@ -208,8 +208,12 @@ public class MainController {
 
             ComponentContainer.USER_STATUS_MAP.put(chatId, UserStatus.OPERATION);
             Words dictionary = Check.dictionary(text, chatId);
-
-            sendMessage.setText(Translator.translate(text));
+            if(Objects.isNull(dictionary))
+                sendMessage.setText("Bunday so'z mavjud emas");
+            if(service.addWord(dictionary))
+                sendMessage.setText("Muvaffaqqiyatli qo'shildi");
+            else sendMessage.setText("Qo'shilmadi");
+            sendMessage.setChatId(chatId);
         }
 
         ComponentContainer.MY_BOT.sendMsg(sendMessage);
